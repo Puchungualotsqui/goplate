@@ -1,6 +1,8 @@
 package main
 
-import "goplate/cmd"
+import (
+	"goplate/cmd"
+)
 
 func main() {
 	cmd.Execute()
