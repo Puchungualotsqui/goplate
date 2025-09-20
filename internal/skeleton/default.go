@@ -9,19 +9,18 @@ var DefaultSkeleton = []internal.FileTemplate{
 	{Path: "internal", IsDir: true},
 	{Path: "web/templates", IsDir: true},
 	{Path: "web/static/assets", IsDir: true},
-	{Path: "web/templates/hello.templ", Content: `
-	package templates
+	{Path: "web/templates/hello.templ", Content: `package templates
 
-	templ Hello() {
-	  <html>
-	    <head>
-	      <title>Hello World</title>
-	    </head>
-	    <body>
-	      <h1>Hello from Templ 🚀</h1>
-	    </body>
-	  </html>
-	}
+templ Hello() {
+  <html>
+    <head>
+      <title>Hello World</title>
+    </head>
+    <body>
+      <h1>Hello from Templ 🚀</h1>
+    </body>
+  </html>
+}
 	`, IsDir: false},
 	{Path: "main.go", Content: `
 	package main
