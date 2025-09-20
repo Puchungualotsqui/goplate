@@ -28,7 +28,7 @@ func CreateSkeleton(basePath, moduleName string, skeleton []FileTemplate) error 
 		}
 
 		content := strings.ReplaceAll(item.Content, "{{MODULE}}", moduleName)
-		content = strings.TrimLeft(item.Content, "\n\r\t ")
+		content = strings.TrimLeft(content, "\n\r\t ")
 
 		dir := filepath.Dir(targetPath)
 		if err := os.MkdirAll(dir, 0755); err != nil {
