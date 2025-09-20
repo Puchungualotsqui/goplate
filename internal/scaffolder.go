@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type FileTemplate struct {
@@ -12,7 +13,7 @@ type FileTemplate struct {
 	IsDir   bool
 }
 
-func CreateProject(basePath string, skeleton []FileTemplate) error {
+func CreateSkeleton(basePath, moduleName string, skeleton []FileTemplate) error {
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return fmt.Errorf("failed to create project root %s: %w:", basePath, err)
 	}
@@ -23,14 +24,17 @@ func CreateProject(basePath string, skeleton []FileTemplate) error {
 			if err := os.MkdirAll(targetPath, 0755); err != nil {
 				return fmt.Errorf("failed to create dir %s: %w", targetPath, err)
 			}
-		} else {
-			dir := filepath.Dir(targetPath)
-			if err := os.MkdirAll(dir, 0755); err != nil {
-				return err
-			}
-			if err := os.WriteFile(targetPath, []byte(item.Content), 0644); err != nil {
-				return fmt.Errorf("failed to write file %s: %w", targetPath, err)
-			}
+			continue
+		}
+
+		content := strings.ReplaceAll(item.Content, "{{MODULE}}", moduleName)
+
+		dir := filepath.Dir(targetPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(targetPath, []byte(content), 0644); err != nil {
+			return fmt.Errorf("failed to write file %s: %w", targetPath, err)
 		}
 	}
 	return nil

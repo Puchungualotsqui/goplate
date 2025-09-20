@@ -1,7 +1,7 @@
 package main
 
 import (
-	"goplate/cmd"
+	"github.com/Puchungualotsqui/goplate/cmd"
 )
 
 func main() {

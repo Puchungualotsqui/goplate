@@ -4,13 +4,43 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
+
+	"github.com/Puchungualotsqui/goplate/config"
+	"github.com/Puchungualotsqui/goplate/utils"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
+var ignorePatterns = []string{
+	"web/static/css/output.css",
+	"web/templates/**/_templ.go", // match at any depth
+}
+
+var mu sync.Mutex
+var timer *time.Timer
+
+func scheduleRun(commands [][]string) {
+	mu.Lock()
+	defer mu.Unlock()
+	if timer != nil {
+		timer.Stop()
+	}
+	timer = time.AfterFunc(300*time.Millisecond, func() {
+		utils.RunCommands(commands, "")
+	})
+}
+
 func RunWatcher() {
+	cfg, err := config.LoadConfig("")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -18,8 +48,14 @@ func RunWatcher() {
 	defer watcher.Close()
 
 	commands := [][]string{
-		{"go", "run", "main.go"},
 		{"templ", "generate"},
+		{"go", "run", "."},
+	}
+
+	if cfg.Tailwind {
+		commands = append([][]string{
+			{"./web/static/css/tailwindcss", "-c", "./web/static/css/tailwind.config.js", "-i", "./web/static/css/input.css", "-o", "./web/static/css/output.css"},
+		}, commands...)
 	}
 
 	watchDirs := []string{"."}
@@ -31,6 +67,8 @@ func RunWatcher() {
 			return nil
 		})
 	}
+
+	scheduleRun(commands)
 
 	fmt.Println("Watching for changes...")
 
@@ -44,11 +82,19 @@ func RunWatcher() {
 				// Ignore folder creation
 				info, err := os.Stat(event.Name)
 				if err == nil && info.IsDir() {
+					if event.Op&fsnotify.Create != 0 {
+						watcher.Add(event.Name)
+						fmt.Println("📂 Added new dir to watch:", event.Name)
+					}
+					continue
+				}
+
+				if ShouldIgnore(event.Name, ignorePatterns) {
 					continue
 				}
 
 				fmt.Println("Change detected:", event.Name)
-				runCommands(commands)
+				scheduleRun(commands)
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
@@ -59,14 +105,21 @@ func RunWatcher() {
 	}
 }
 
-func runCommands(cmds [][]string) {
-	for _, cmdArgs := range cmds {
-		fmt.Println("Running:", cmdArgs)
-		cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			fmt.Println("Error", err)
+func ShouldIgnore(path string, patterns []string) bool {
+	// Normalize slashes for cross-platform matching
+	path = filepath.ToSlash(filepath.Clean(path))
+
+	for _, pattern := range patterns {
+		// Also normalize patterns (so they work on Windows too)
+		pattern = filepath.ToSlash(pattern)
+
+		matched, err := doublestar.PathMatch(pattern, path)
+		if err != nil {
+			continue
+		}
+		if matched {
+			return true
 		}
 	}
+	return false
 }

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"goplate/internal"
+	"github.com/Puchungualotsqui/goplate/internal"
 
 	"github.com/spf13/cobra"
 )
