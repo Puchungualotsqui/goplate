@@ -17,8 +17,9 @@ import (
 )
 
 var ignorePatterns = []string{
-	"web/static/css/output.css",
+	"static/css/output.css",
 	"**/*_templ.go", // match at any depth
+	"bin/server",
 }
 
 var mu sync.Mutex
@@ -56,7 +57,7 @@ func RunWatcher() {
 
 	if cfg.Tailwind {
 		buildCommands = append([][]string{
-			{"./web/static/css/tailwindcss", "-c", "./web/static/css/tailwind.config.js", "-i", "./web/static/css/input.css", "-o", "./web/static/css/output.css"},
+			{"./static/css/tailwindcss", "-c", "./static/css/tailwind.config.js", "-i", "./static/css/input.css", "-o", "./static/css/output.css"},
 		}, buildCommands...)
 	}
 

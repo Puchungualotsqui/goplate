@@ -5,13 +5,13 @@ import (
 )
 
 var TailwindSkeleton = []internal.FileTemplate{
-	{Path: "web/static/css", IsDir: true},
-	{Path: "web/static/css/input.css", Content: `
+	{Path: "static/css", IsDir: true},
+	{Path: "static/css/input.css", Content: `
 	@tailwind base;
 	@tailwind components;
 	@tailwind utilities;
 	`, IsDir: false},
-	{Path: "web/static/css/tailwind.config.js", Content: `
+	{Path: "static/css/tailwind.config.js", Content: `
 	/** @type {import('tailwindcss').Config} */
 	module.exports = {
 	  content: [
@@ -23,7 +23,7 @@ var TailwindSkeleton = []internal.FileTemplate{
 	  },
 	};
 	`, IsDir: false},
-	{Path: "web/templates/hello.templ", Content: `package templates
+	{Path: "templates/hello.templ", Content: `package templates
 
 templ Hello() {
 <html>

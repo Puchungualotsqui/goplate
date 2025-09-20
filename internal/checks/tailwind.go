@@ -31,7 +31,7 @@ func EnsureTailwindInstalled(projectPath, basePath string, cfg *config.GoplateCo
 	}
 
 	url := fmt.Sprintf("https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-%s", platform)
-	targetFile := filepath.Join(projectPath, "web", "static", "css", "tailwindcss")
+	targetFile := filepath.Join(projectPath, "static", "css", "tailwindcss")
 	if runtime.GOOS == "windows" {
 		targetFile += ".exe"
 	}

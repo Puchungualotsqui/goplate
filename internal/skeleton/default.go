@@ -7,9 +7,10 @@ import (
 var DefaultSkeleton = []internal.FileTemplate{
 	{Path: "cmd", IsDir: true},
 	{Path: "internal", IsDir: true},
-	{Path: "web/templates", IsDir: true},
-	{Path: "web/static/assets", IsDir: true},
-	{Path: "web/templates/hello.templ", Content: `package templates
+	{Path: "templates", IsDir: true},
+	{Path: "static/assets", IsDir: true},
+	{Path: "bin", IsDir: true},
+	{Path: "templates/hello.templ", Content: `package templates
 
 templ Hello() {
   <html>
@@ -27,7 +28,7 @@ templ Hello() {
 
 	import (
 			"log"
-			"{{MODULE}}/web/templates"
+			"{{MODULE}}/templates"
 			"net/http"
 	)
 
@@ -39,7 +40,7 @@ templ Hello() {
 				}
 			})
 
-			http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+			http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 			log.Println("🚀 Server running at http://localhost:3000")
 			log.Fatal(http.ListenAndServe(":3000", nil))
