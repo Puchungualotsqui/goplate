@@ -18,20 +18,23 @@ import (
 
 var ignorePatterns = []string{
 	"web/static/css/output.css",
-	"web/templates/**/_templ.go", // match at any depth
+	"**/*_templ.go", // match at any depth
 }
 
 var mu sync.Mutex
 var timer *time.Timer
 
-func scheduleRun(commands [][]string) {
+func scheduleRun(buildCommands [][]string) {
 	mu.Lock()
 	defer mu.Unlock()
 	if timer != nil {
 		timer.Stop()
 	}
 	timer = time.AfterFunc(300*time.Millisecond, func() {
-		utils.RunCommands(commands, "")
+		// Run build steps
+		utils.RunCommands(buildCommands, "")
+		// Restart server
+		runServer()
 	})
 }
 
@@ -47,15 +50,14 @@ func RunWatcher() {
 	}
 	defer watcher.Close()
 
-	commands := [][]string{
+	buildCommands := [][]string{
 		{"templ", "generate"},
-		{"go", "run", "."},
 	}
 
 	if cfg.Tailwind {
-		commands = append([][]string{
+		buildCommands = append([][]string{
 			{"./web/static/css/tailwindcss", "-c", "./web/static/css/tailwind.config.js", "-i", "./web/static/css/input.css", "-o", "./web/static/css/output.css"},
-		}, commands...)
+		}, buildCommands...)
 	}
 
 	watchDirs := []string{"."}
@@ -68,7 +70,7 @@ func RunWatcher() {
 		})
 	}
 
-	scheduleRun(commands)
+	scheduleRun(buildCommands)
 
 	fmt.Println("Watching for changes...")
 
@@ -94,7 +96,7 @@ func RunWatcher() {
 				}
 
 				fmt.Println("Change detected:", event.Name)
-				scheduleRun(commands)
+				scheduleRun(buildCommands)
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
