@@ -10,17 +10,29 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+var defaultIgnorePatterns = []string{
+	"static/css/output.css",
+	"**/*_templ.go", // match at any depth
+	"bin/server",
+}
+
 type GoplateConfig struct {
-	Project  string `toml:"project"`
-	Module   string `toml:"module"`
-	Tailwind bool   `toml:"tailwind"`
-	DaisyUI  bool   `toml:"daisyui"`
+	Project        string   `toml:"project"`
+	Module         string   `toml:"module"`
+	Tailwind       bool     `toml:"tailwind"`
+	DaisyUI        bool     `toml:"daisyui"`
+	IgnorePatterns []string `toml:"ignore_patterns"`
 }
 
 func SaveConfig(projectPath string, cfg GoplateConfig) error {
 	path, err := utils.ResolvePath(projectPath)
 	if err != nil {
 		return err
+	}
+
+	// Apply defaults if field empty
+	if len(cfg.IgnorePatterns) == 0 {
+		cfg.IgnorePatterns = defaultIgnorePatterns
 	}
 
 	filePath := filepath.Join(path, "goplate.toml")
@@ -50,5 +62,11 @@ func LoadConfig(projectPath string) (GoplateConfig, error) {
 	if _, err := toml.DecodeFile(filePath, &cfg); err != nil {
 		return cfg, fmt.Errorf("failed to read goplate.toml: %w", err)
 	}
+
+	// Apply defaults if not set
+	if len(cfg.IgnorePatterns) == 0 {
+		cfg.IgnorePatterns = defaultIgnorePatterns
+	}
+
 	return cfg, nil
 }

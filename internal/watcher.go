@@ -16,12 +16,6 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 )
 
-var ignorePatterns = []string{
-	"static/css/output.css",
-	"**/*_templ.go", // match at any depth
-	"bin/server",
-}
-
 var mu sync.Mutex
 var timer *time.Timer
 
@@ -92,7 +86,7 @@ func RunWatcher() {
 					continue
 				}
 
-				if ShouldIgnore(event.Name, ignorePatterns) {
+				if ShouldIgnore(event.Name, cfg.IgnorePatterns) {
 					continue
 				}
 
